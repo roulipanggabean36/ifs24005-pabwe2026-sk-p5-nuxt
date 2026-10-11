@@ -26,4 +26,4 @@ logs
 Thumbs.db
 .idea
 .vscode/*
-!.vscode/extensions.json
+!.vscode/extensions.jsoncoverage/
