@@ -1,11 +1,7 @@
-﻿import type { RouterConfig } from '@nuxt/schema'
+import type { RouterConfig } from '@nuxt/schema'
+import { routes } from '~/routes'
 
 export default {
-  routes: () => [
-    {
-      name: 'home',
-      path: '/',
-      component: () => import('~/pages/HomePage.vue'),
-    },
-  ],
+  // Rute dikelola manual di src/routes.ts; rute otomatis dari folder pages diabaikan
+  routes: () => routes,
 } satisfies RouterConfig

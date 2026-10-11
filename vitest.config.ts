@@ -43,6 +43,9 @@ export default defineConfig(({ mode }) => {
           'src/**/*.d.ts',
           'src/setupTests.ts',
           'src/test-utils.ts',
+          // Entry point tipis Nuxt yang bergantung pada modul virtual (#app, #components)
+          'src/app.vue',
+          'src/plugins/**',
         ],
         thresholds: {
           lines: 100,
