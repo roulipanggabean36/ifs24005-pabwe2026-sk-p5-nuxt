@@ -35,9 +35,9 @@ const onSubmit = async (): Promise<void> => {
   >
     <form class="space-y-5" novalidate @submit.prevent="onSubmit">
       <div>
-        <label for="email" class="mb-1.5 block text-sm font-semibold text-slate-700">Email</label>
+        <label for="login-email-input" class="mb-1.5 block text-sm font-semibold text-slate-700">Email</label>
         <input
-          id="email"
+          id="login-email-input"
           type="email"
           autocomplete="email"
           placeholder="nama@email.com"
@@ -48,11 +48,11 @@ const onSubmit = async (): Promise<void> => {
       </div>
 
       <div>
-        <label for="password" class="mb-1.5 block text-sm font-semibold text-slate-700">
+        <label for="login-password-input" class="mb-1.5 block text-sm font-semibold text-slate-700">
           Kata sandi
         </label>
         <input
-          id="password"
+          id="login-password-input"
           type="password"
           autocomplete="current-password"
           placeholder="Masukkan kata sandi"
@@ -63,7 +63,7 @@ const onSubmit = async (): Promise<void> => {
       </div>
 
       <button
-        type="submit"
+        type="submit" id="login-submit-button"
         :disabled="auth.loading"
         class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
       >

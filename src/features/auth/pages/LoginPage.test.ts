@@ -37,8 +37,8 @@ const mountPage = (loading = false) => {
 }
 
 const fill = async (wrapper: ReturnType<typeof mountPage>, email: string, password: string) => {
-  await wrapper.find('#email').setValue(email)
-  await wrapper.find('#password').setValue(password)
+  await wrapper.find('#login-email-input').setValue(email)
+  await wrapper.find('#login-password-input').setValue(password)
 }
 
 const submit = async (wrapper: ReturnType<typeof mountPage>) => {
@@ -56,8 +56,8 @@ describe('LoginPage', () => {
     const wrapper = mountPage()
 
     expect(wrapper.find('h1').text()).toBe('Masuk ke Delcom Cash Flow')
-    expect(wrapper.find('#email').exists()).toBe(true)
-    expect(wrapper.find('#password').exists()).toBe(true)
+    expect(wrapper.find('#login-email-input').exists()).toBe(true)
+    expect(wrapper.find('#login-password-input').exists()).toBe(true)
     expect(wrapper.find('button[type="submit"]').text()).toBe('Masuk')
     expect(wrapper.find('a[href="/auth/register"]').exists()).toBe(true)
   })
