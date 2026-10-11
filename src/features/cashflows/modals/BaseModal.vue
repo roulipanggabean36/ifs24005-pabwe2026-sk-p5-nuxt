@@ -47,7 +47,7 @@ watch(
         <button
           type="button"
           aria-label="Tutup"
-          class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+          class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
           @click="emit('close')"
         >
           <X class="h-5 w-5" aria-hidden="true" />

@@ -1,6 +1,4 @@
-﻿import Swal from 'sweetalert2'
-
-export interface ConfirmOptions {
+﻿export interface ConfirmOptions {
   title: string
   text?: string
   confirmText?: string
@@ -9,8 +7,11 @@ export interface ConfirmOptions {
 
 const BRAND_COLOR = '#4f46e5'
 
-export const showSuccess = (message: string, title = 'Berhasil') =>
-  Swal.fire({
+/** SweetAlert2 hanya diunduh saat dialog pertama kali dibutuhkan (mengurangi JS awal) */
+const loadSwal = async () => (await import('sweetalert2')).default
+
+export const showSuccess = async (message: string, title = 'Berhasil') =>
+  (await loadSwal()).fire({
     icon: 'success',
     title,
     text: message,
@@ -18,8 +19,8 @@ export const showSuccess = (message: string, title = 'Berhasil') =>
     showConfirmButton: false,
   })
 
-export const showError = (message: string, title = 'Gagal') =>
-  Swal.fire({
+export const showError = async (message: string, title = 'Gagal') =>
+  (await loadSwal()).fire({
     icon: 'error',
     title,
     text: message,
@@ -32,7 +33,7 @@ export const showConfirm = async ({
   confirmText = 'Ya',
   cancelText = 'Batal',
 }: ConfirmOptions): Promise<boolean> => {
-  const result = await Swal.fire({
+  const result = await (await loadSwal()).fire({
     icon: 'warning',
     title,
     text,

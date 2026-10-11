@@ -13,7 +13,7 @@ describe('PeriodChart', () => {
       props: { title: 'Statistik harian', inflow: {}, outflow: {} },
     })
 
-    expect(wrapper.get('h3').text()).toBe('Statistik harian')
+    expect(wrapper.get('h2').text()).toBe('Statistik harian')
     expect(wrapper.text()).toContain('Pemasukan')
     expect(wrapper.text()).toContain('Pengeluaran')
   })

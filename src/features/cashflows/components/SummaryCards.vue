@@ -12,7 +12,7 @@ defineProps<{
 <template>
   <dl class="grid gap-4 sm:grid-cols-3">
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <dt class="flex items-center gap-2 text-sm font-semibold text-slate-500">
+      <dt class="flex items-center gap-2 text-sm font-semibold text-slate-600">
         <Wallet class="h-4 w-4" aria-hidden="true" />
         Saldo
       </dt>
@@ -26,7 +26,7 @@ defineProps<{
     </div>
 
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <dt class="flex items-center gap-2 text-sm font-semibold text-slate-500">
+      <dt class="flex items-center gap-2 text-sm font-semibold text-slate-600">
         <ArrowUpRight class="h-4 w-4 text-income" aria-hidden="true" />
         Pemasukan
       </dt>
@@ -36,7 +36,7 @@ defineProps<{
     </div>
 
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <dt class="flex items-center gap-2 text-sm font-semibold text-slate-500">
+      <dt class="flex items-center gap-2 text-sm font-semibold text-slate-600">
         <ArrowDownLeft class="h-4 w-4 text-expense" aria-hidden="true" />
         Pengeluaran
       </dt>

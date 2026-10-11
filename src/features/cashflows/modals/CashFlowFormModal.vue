@@ -24,7 +24,7 @@ const emit = defineEmits<{
 }>()
 
 const FIELD_CLASS =
-  'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30'
+  'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30'
 const LABEL_CLASS = 'mb-1.5 block text-sm font-semibold text-slate-700'
 
 const type = ref<CashFlowType>('outflow')

@@ -123,7 +123,7 @@ const onDeleteAll = async (): Promise<void> => {
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-2xl font-extrabold text-slate-900">Arus kas</h1>
-        <p class="mt-1 text-sm text-slate-500">Pantau pemasukan, pengeluaran, dan saldo Anda.</p>
+        <p class="mt-1 text-sm text-slate-600">Pantau pemasukan, pengeluaran, dan saldo Anda.</p>
       </div>
 
       <div class="flex gap-2">
@@ -175,7 +175,7 @@ const onDeleteAll = async (): Promise<void> => {
       @reset="onFilterReset"
     />
 
-    <p v-if="store.loading" role="status" class="py-10 text-center text-sm text-slate-500">
+    <p v-if="store.loading" role="status" class="py-10 text-center text-sm text-slate-600">
       Memuat transaksi...
     </p>
     <CashFlowList v-else :cash-flows="store.cashFlows" @edit="openEdit" @delete="onDelete" />
