@@ -1,0 +1,2680 @@
+﻿
+===== src\features\auth\layouts\AuthLayout.vue =====
+
+<script setup lang="ts">
+import { Wallet } from 'lucide-vue-next'
+
+defineProps<{
+  title: string
+  subtitle?: string
+}>()
+</script>
+
+<template>
+  <main class="flex min-h-screen items-center justify-center bg-brand-50 px-4 py-10">
+    <div class="w-full max-w-md">
+      <div class="mb-8 flex flex-col items-center text-center">
+        <div
+          class="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-lg"
+        >
+          <Wallet class="h-7 w-7" aria-hidden="true" />
+        </div>
+        <h1 class="text-2xl font-extrabold text-slate-900">{{ title }}</h1>
+        <p v-if="subtitle" class="mt-2 text-sm text-slate-500">{{ subtitle }}</p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <slot />
+      </div>
+
+      <p class="mt-6 text-center text-xs text-slate-400">Delcom Cash Flow</p>
+    </div>
+  </main>
+</template>
+
+
+===== src\features\auth\pages\LoginPage.vue =====
+
+<script setup lang="ts">
+import { LogIn } from 'lucide-vue-next'
+import { RouterLink, useRouter } from 'vue-router'
+import { useAuthStore } from '~/features/auth/authStore'
+import AuthLayout from '~/features/auth/layouts/AuthLayout.vue'
+import { getErrorMessage, showError, showSuccess } from '~/helpers/toolsHelper'
+import { useInput } from '~/hooks/useInput'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const { value: email, onInput: onEmailInput } = useInput('')
+const { value: password, onInput: onPasswordInput } = useInput('')
+
+const onSubmit = async (): Promise<void> => {
+  if (!email.value.trim() || !password.value) {
+    await showError('Email dan kata sandi wajib diisi.')
+    return
+  }
+
+  try {
+    await auth.login({ email: email.value.trim(), password: password.value })
+    void showSuccess('Berhasil masuk. Selamat datang!')
+    await router.push('/')
+  } catch (error) {
+    await showError(getErrorMessage(error))
+  }
+}
+</script>
+
+<template>
+  <AuthLayout
+    title="Masuk ke Delcom Cash Flow"
+    subtitle="Catat dan pantau arus kas Anda dengan mudah."
+  >
+    <form class="space-y-5" novalidate @submit.prevent="onSubmit">
+      <div>
+        <label for="email" class="mb-1.5 block text-sm font-semibold text-slate-700">Email</label>
+        <input
+          id="email"
+          type="email"
+          autocomplete="email"
+          placeholder="nama@email.com"
+          :value="email"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          @input="onEmailInput"
+        />
+      </div>
+
+      <div>
+        <label for="password" class="mb-1.5 block text-sm font-semibold text-slate-700">
+          Kata sandi
+        </label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Masukkan kata sandi"
+          :value="password"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          @input="onPasswordInput"
+        />
+      </div>
+
+      <button
+        type="submit"
+        :disabled="auth.loading"
+        class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <LogIn class="h-4 w-4" aria-hidden="true" />
+        {{ auth.loading ? 'Memproses...' : 'Masuk' }}
+      </button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-slate-500">
+      Belum punya akun?
+      <RouterLink to="/auth/register" class="font-semibold text-brand-600 hover:text-brand-700">
+        Daftar sekarang
+      </RouterLink>
+    </p>
+  </AuthLayout>
+</template>
+
+
+===== src\features\auth\pages\RegisterPage.vue =====
+
+<script setup lang="ts">
+import { UserPlus } from 'lucide-vue-next'
+import { RouterLink, useRouter } from 'vue-router'
+import { useAuthStore } from '~/features/auth/authStore'
+import AuthLayout from '~/features/auth/layouts/AuthLayout.vue'
+import { getErrorMessage, showError, showSuccess } from '~/helpers/toolsHelper'
+import { useInput } from '~/hooks/useInput'
+
+const MIN_PASSWORD_LENGTH = 6
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const { value: name, onInput: onNameInput } = useInput<string>('')
+const { value: email, onInput: onEmailInput } = useInput<string>('')
+const { value: password, onInput: onPasswordInput } = useInput<string>('')
+
+const onSubmit = async (): Promise<void> => {
+  if (!name.value.trim() || !email.value.trim() || !password.value) {
+    await showError('Nama, email, dan kata sandi wajib diisi.')
+    return
+  }
+
+  if (password.value.length < MIN_PASSWORD_LENGTH) {
+    await showError(`Kata sandi minimal ${MIN_PASSWORD_LENGTH} karakter.`)
+    return
+  }
+
+  try {
+    await auth.register({
+      name: name.value.trim(),
+      email: email.value.trim(),
+      password: password.value,
+    })
+    void showSuccess('Pendaftaran berhasil. Silakan masuk.')
+    await router.push('/auth/login')
+  } catch (error) {
+    await showError(getErrorMessage(error))
+  }
+}
+</script>
+
+<template>
+  <AuthLayout title="Buat akun baru" subtitle="Mulai kelola arus kas Anda bersama Delcom.">
+    <form class="space-y-5" novalidate @submit.prevent="onSubmit">
+      <div>
+        <label for="name" class="mb-1.5 block text-sm font-semibold text-slate-700">
+          Nama lengkap
+        </label>
+        <input
+          id="name"
+          type="text"
+          autocomplete="name"
+          placeholder="Nama Anda"
+          :value="name"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          @input="onNameInput"
+        />
+      </div>
+
+      <div>
+        <label for="email" class="mb-1.5 block text-sm font-semibold text-slate-700">Email</label>
+        <input
+          id="email"
+          type="email"
+          autocomplete="email"
+          placeholder="nama@email.com"
+          :value="email"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          @input="onEmailInput"
+        />
+      </div>
+
+      <div>
+        <label for="password" class="mb-1.5 block text-sm font-semibold text-slate-700">
+          Kata sandi
+        </label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="new-password"
+          placeholder="Minimal 6 karakter"
+          :value="password"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          @input="onPasswordInput"
+        />
+      </div>
+
+      <button
+        type="submit"
+        :disabled="auth.loading"
+        class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <UserPlus class="h-4 w-4" aria-hidden="true" />
+        {{ auth.loading ? 'Memproses...' : 'Daftar' }}
+      </button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-slate-500">
+      Sudah punya akun?
+      <RouterLink to="/auth/login" class="font-semibold text-brand-600 hover:text-brand-700">
+        Masuk di sini
+      </RouterLink>
+    </p>
+  </AuthLayout>
+</template>
+
+
+===== src\features\auth\authApi.ts =====
+
+import type { LoginData, LoginPayload, RegisterPayload } from '~/features/auth/types'
+import { api } from '~/helpers/apiHelper'
+
+export const authApi = {
+  login: (payload: LoginPayload) => api.post<LoginData>('/auth/login', payload, { auth: false }),
+  register: (payload: RegisterPayload) =>
+    api.post<undefined>('/auth/register', payload, { auth: false }),
+  logout: () => api.post<undefined>('/auth/logout'),
+}
+
+
+===== src\features\auth\authStore.ts =====
+
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
+import { authApi } from '~/features/auth/authApi'
+import type { LoginPayload, RegisterPayload, User } from '~/features/auth/types'
+import { getToken, removeToken, setToken } from '~/helpers/apiHelper'
+
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref<string | null>(getToken())
+  const user = ref<User | null>(null)
+  const loading = ref(false)
+
+  const isAuthenticated = computed(() => token.value !== null)
+
+  // Menyelaraskan state dengan localStorage (token dihapus otomatis oleh apiHelper saat 401)
+  const syncToken = (): void => {
+    token.value = getToken()
+    if (token.value === null) user.value = null
+  }
+
+  const clearSession = (): void => {
+    removeToken()
+    token.value = null
+    user.value = null
+  }
+
+  const login = async (payload: LoginPayload): Promise<void> => {
+    loading.value = true
+    try {
+      const response = await authApi.login(payload)
+      setToken(response.data.token)
+      token.value = response.data.token
+      user.value = response.data.user
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const register = async (payload: RegisterPayload): Promise<void> => {
+    loading.value = true
+    try {
+      await authApi.register(payload)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const logout = async (): Promise<void> => {
+    loading.value = true
+    try {
+      await authApi.logout()
+    } catch {
+      // Sesi lokal tetap dibersihkan walau server menolak (mis. token sudah kedaluwarsa)
+    } finally {
+      loading.value = false
+    }
+    clearSession()
+  }
+
+  return { token, user, loading, isAuthenticated, syncToken, clearSession, login, register, logout }
+})
+
+
+===== src\features\auth\types.ts =====
+
+export interface User {
+  id: number
+  name: string
+  email: string
+  email_verified_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface LoginPayload {
+  email: string
+  password: string
+}
+
+export interface RegisterPayload extends LoginPayload {
+  name: string
+}
+
+export interface LoginData {
+  user: User
+  token: string
+}
+
+
+===== src\features\cashflows\components\CashFlowFilterBar.vue =====
+
+<script setup lang="ts">
+import { FilterX } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { hasActiveFilters } from '~/features/cashflows/cashflowHelper'
+import { SOURCE_OPTIONS, TYPE_OPTIONS } from '~/features/cashflows/constants'
+import type { CashFlowFilters } from '~/features/cashflows/types'
+
+const props = defineProps<{
+  modelValue: CashFlowFilters
+  labels: string[]
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: CashFlowFilters]
+  reset: []
+}>()
+
+const FIELD_CLASS =
+  'w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30'
+const LABEL_CLASS = 'mb-1 block text-xs font-semibold text-slate-600'
+
+const isActive = computed(() => hasActiveFilters(props.modelValue))
+
+const update = (key: keyof CashFlowFilters, event: Event): void => {
+  const { value } = event.target as HTMLInputElement | HTMLSelectElement
+  emit('update:modelValue', { ...props.modelValue, [key]: value })
+}
+</script>
+
+<template>
+  <form
+    class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+    aria-label="Filter transaksi"
+    @submit.prevent
+  >
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div>
+        <label for="filter-type" :class="LABEL_CLASS">Jenis</label>
+        <select
+          id="filter-type"
+          :value="modelValue.type"
+          :class="FIELD_CLASS"
+          @change="update('type', $event)"
+        >
+          <option value="">Semua jenis</option>
+          <option v-for="option in TYPE_OPTIONS" :key="option.value" :value="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label for="filter-source" :class="LABEL_CLASS">Sumber dana</label>
+        <select
+          id="filter-source"
+          :value="modelValue.source"
+          :class="FIELD_CLASS"
+          @change="update('source', $event)"
+        >
+          <option value="">Semua sumber</option>
+          <option v-for="option in SOURCE_OPTIONS" :key="option.value" :value="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label for="filter-label" :class="LABEL_CLASS">Label</label>
+        <select
+          id="filter-label"
+          :value="modelValue.label"
+          :class="FIELD_CLASS"
+          @change="update('label', $event)"
+        >
+          <option value="">Semua label</option>
+          <option v-for="label in labels" :key="label" :value="label">{{ label }}</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="filter-start" :class="LABEL_CLASS">Dari tanggal</label>
+        <input
+          id="filter-start"
+          type="date"
+          :value="modelValue.start_date"
+          :class="FIELD_CLASS"
+          @input="update('start_date', $event)"
+        />
+      </div>
+
+      <div>
+        <label for="filter-end" :class="LABEL_CLASS">Sampai tanggal</label>
+        <input
+          id="filter-end"
+          type="date"
+          :value="modelValue.end_date"
+          :class="FIELD_CLASS"
+          @input="update('end_date', $event)"
+        />
+      </div>
+    </div>
+
+    <button
+      v-if="isActive"
+      type="button"
+      class="mt-3 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+      @click="emit('reset')"
+    >
+      <FilterX class="h-4 w-4" aria-hidden="true" />
+      Hapus filter
+    </button>
+  </form>
+</template>
+
+
+===== src\features\cashflows\components\CashFlowList.vue =====
+
+<script setup lang="ts">
+import { ArrowDownLeft, ArrowUpRight, Pencil, Trash2 } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
+import { SOURCE_LABELS } from '~/features/cashflows/constants'
+import type { CashFlow } from '~/features/cashflows/types'
+import { formatCurrency, formatDate } from '~/helpers/toolsHelper'
+
+defineProps<{
+  cashFlows: CashFlow[]
+}>()
+
+const emit = defineEmits<{
+  edit: [cashFlow: CashFlow]
+  delete: [cashFlow: CashFlow]
+}>()
+
+const isInflow = (cashFlow: CashFlow): boolean => cashFlow.type === 'inflow'
+</script>
+
+<template>
+  <p
+    v-if="cashFlows.length === 0"
+    class="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-500"
+  >
+    Belum ada transaksi. Tambahkan transaksi pertama untuk mulai mencatat arus kas.
+  </p>
+
+  <ul
+    v-else
+    class="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white shadow-sm"
+  >
+    <li v-for="item in cashFlows" :key="item.id" class="flex items-start gap-4 p-4">
+      <span
+        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+        :class="isInflow(item) ? 'bg-income/10 text-income' : 'bg-expense/10 text-expense'"
+      >
+        <ArrowUpRight v-if="isInflow(item)" class="h-5 w-5" aria-hidden="true" />
+        <ArrowDownLeft v-else class="h-5 w-5" aria-hidden="true" />
+      </span>
+
+      <div class="min-w-0 flex-1">
+        <RouterLink
+          :to="`/cash-flows/${item.id}`"
+          class="font-semibold text-slate-900 hover:text-brand-600"
+        >
+          {{ item.label }}
+        </RouterLink>
+        <p class="truncate text-sm text-slate-500">{{ item.description }}</p>
+        <div class="mt-1.5 flex flex-wrap items-center gap-2">
+          <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+            {{ SOURCE_LABELS[item.source] }}
+          </span>
+          <time :datetime="item.created_at" class="text-xs text-slate-500">
+            {{ formatDate(item.created_at) }}
+          </time>
+        </div>
+      </div>
+
+      <div class="flex shrink-0 flex-col items-end gap-2">
+        <p
+          data-testid="nominal"
+          class="text-sm font-bold"
+          :class="isInflow(item) ? 'text-income' : 'text-expense'"
+        >
+          {{ isInflow(item) ? '+' : '-' }}{{ formatCurrency(item.nominal) }}
+        </p>
+        <div class="flex gap-1">
+          <button
+            type="button"
+            :aria-label="`Ubah transaksi ${item.label}`"
+            class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+            @click="emit('edit', item)"
+          >
+            <Pencil class="h-4 w-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            :aria-label="`Hapus transaksi ${item.label}`"
+            class="rounded-lg p-2 text-slate-500 transition hover:bg-expense/10 hover:text-expense focus:outline-none focus-visible:ring-2 focus-visible:ring-expense/40"
+            @click="emit('delete', item)"
+          >
+            <Trash2 class="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </li>
+  </ul>
+</template>
+
+
+===== src\features\cashflows\components\PeriodChart.vue =====
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { formatCurrency } from '~/helpers/toolsHelper'
+
+const props = defineProps<{
+  title: string
+  inflow: Record<string, number>
+  outflow: Record<string, number>
+}>()
+
+const periods = computed(() =>
+  Object.entries(props.inflow).map(([period, inflowValue]) => ({
+    period,
+    inflow: inflowValue,
+    outflow: props.outflow[period] ?? 0,
+  })),
+)
+
+const maxValue = computed(() =>
+  Math.max(0, ...periods.value.flatMap((item) => [item.inflow, item.outflow])),
+)
+
+const barHeight = (value: number): number =>
+  maxValue.value === 0 ? 0 : Math.round((value / maxValue.value) * 100)
+
+const summary = (item: { inflow: number; outflow: number }): string =>
+  `Pemasukan ${formatCurrency(item.inflow)}, pengeluaran ${formatCurrency(item.outflow)}`
+</script>
+
+<template>
+  <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h3 class="text-base font-bold text-slate-900">{{ title }}</h3>
+      <div class="flex items-center gap-4 text-xs text-slate-600">
+        <span class="flex items-center gap-1.5">
+          <span class="h-2.5 w-2.5 rounded-full bg-income" aria-hidden="true" />
+          Pemasukan
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="h-2.5 w-2.5 rounded-full bg-expense" aria-hidden="true" />
+          Pengeluaran
+        </span>
+      </div>
+    </div>
+
+    <p v-if="periods.length === 0" class="py-8 text-center text-sm text-slate-500">
+      Belum ada data statistik untuk ditampilkan.
+    </p>
+
+    <ul v-else class="mt-4 flex gap-2 overflow-x-auto">
+      <li
+        v-for="item in periods"
+        :key="item.period"
+        class="flex min-w-12 flex-1 flex-col items-center gap-1.5"
+        :title="summary(item)"
+      >
+        <div class="flex h-32 w-full items-end justify-center gap-1">
+          <div
+            data-testid="bar-inflow"
+            class="w-3 rounded-t bg-income"
+            :style="{ height: `${barHeight(item.inflow)}%` }"
+          />
+          <div
+            data-testid="bar-outflow"
+            class="w-3 rounded-t bg-expense"
+            :style="{ height: `${barHeight(item.outflow)}%` }"
+          />
+        </div>
+        <span class="text-[11px] text-slate-500">{{ item.period }}</span>
+        <span class="sr-only">{{ summary(item) }}</span>
+      </li>
+    </ul>
+  </section>
+</template>
+
+
+===== src\features\cashflows\components\SummaryCards.vue =====
+
+<script setup lang="ts">
+import { ArrowDownLeft, ArrowUpRight, Wallet } from 'lucide-vue-next'
+import { formatCurrency } from '~/helpers/toolsHelper'
+
+defineProps<{
+  balance: number
+  totalInflow: number
+  totalOutflow: number
+}>()
+</script>
+
+<template>
+  <dl class="grid gap-4 sm:grid-cols-3">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <dt class="flex items-center gap-2 text-sm font-semibold text-slate-500">
+        <Wallet class="h-4 w-4" aria-hidden="true" />
+        Saldo
+      </dt>
+      <dd
+        data-testid="balance"
+        class="mt-2 text-2xl font-extrabold"
+        :class="balance < 0 ? 'text-expense' : 'text-slate-900'"
+      >
+        {{ formatCurrency(balance) }}
+      </dd>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <dt class="flex items-center gap-2 text-sm font-semibold text-slate-500">
+        <ArrowUpRight class="h-4 w-4 text-income" aria-hidden="true" />
+        Pemasukan
+      </dt>
+      <dd data-testid="inflow" class="mt-2 text-2xl font-extrabold text-income">
+        {{ formatCurrency(totalInflow) }}
+      </dd>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <dt class="flex items-center gap-2 text-sm font-semibold text-slate-500">
+        <ArrowDownLeft class="h-4 w-4 text-expense" aria-hidden="true" />
+        Pengeluaran
+      </dt>
+      <dd data-testid="outflow" class="mt-2 text-2xl font-extrabold text-expense">
+        {{ formatCurrency(totalOutflow) }}
+      </dd>
+    </div>
+  </dl>
+</template>
+
+
+===== src\features\cashflows\modals\BaseModal.vue =====
+
+<script setup lang="ts">
+import { X } from 'lucide-vue-next'
+import { nextTick, ref, useId, watch } from 'vue'
+
+const props = defineProps<{
+  open: boolean
+  title: string
+}>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+const titleId = `modal-title-${useId()}`
+const panel = ref<HTMLElement | null>(null)
+
+// Fokus dipindahkan ke dialog saat dibuka agar pembaca layar langsung membacakan judulnya
+// dan tombol Escape langsung berfungsi
+watch(
+  () => props.open,
+  async (open) => {
+    if (!open) return
+    await nextTick()
+    panel.value!.focus()
+  },
+  { immediate: true },
+)
+</script>
+
+<template>
+  <div
+    v-if="open"
+    class="fixed inset-0 z-40 flex items-end justify-center bg-slate-900/50 p-4 sm:items-center"
+    @click.self="emit('close')"
+  >
+    <div
+      ref="panel"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="titleId"
+      tabindex="-1"
+      class="max-h-full w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-xl focus:outline-none"
+      @keydown.esc="emit('close')"
+    >
+      <header class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+        <h2 :id="titleId" class="text-lg font-bold text-slate-900">{{ title }}</h2>
+        <button
+          type="button"
+          aria-label="Tutup"
+          class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+          @click="emit('close')"
+        >
+          <X class="h-5 w-5" aria-hidden="true" />
+        </button>
+      </header>
+
+      <div class="px-6 py-5">
+        <slot />
+      </div>
+    </div>
+  </div>
+</template>
+
+
+===== src\features\cashflows\modals\CashFlowFormModal.vue =====
+
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { SOURCE_OPTIONS, TYPE_OPTIONS } from '~/features/cashflows/constants'
+import BaseModal from '~/features/cashflows/modals/BaseModal.vue'
+import type {
+  CashFlow,
+  CashFlowPayload,
+  CashFlowSource,
+  CashFlowType,
+} from '~/features/cashflows/types'
+import { useInput } from '~/hooks/useInput'
+
+const props = defineProps<{
+  open: boolean
+  /** Diisi saat mengubah transaksi; kosong berarti menambah transaksi baru */
+  cashFlow?: CashFlow | null
+  labels: string[]
+  saving: boolean
+}>()
+
+const emit = defineEmits<{
+  close: []
+  submit: [payload: CashFlowPayload]
+}>()
+
+const FIELD_CLASS =
+  'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30'
+const LABEL_CLASS = 'mb-1.5 block text-sm font-semibold text-slate-700'
+
+const type = ref<CashFlowType>('outflow')
+const source = ref<CashFlowSource>('cash')
+const { value: label, onInput: onLabelInput } = useInput<string>('')
+const { value: description, onInput: onDescriptionInput } = useInput<string>('')
+const { value: nominal, onInput: onNominalInput } = useInput<string>('')
+const error = ref('')
+
+const isEdit = computed(() => Boolean(props.cashFlow))
+
+const populate = (): void => {
+  error.value = ''
+  if (props.cashFlow) {
+    type.value = props.cashFlow.type
+    source.value = props.cashFlow.source
+    label.value = props.cashFlow.label
+    description.value = props.cashFlow.description
+    nominal.value = String(props.cashFlow.nominal)
+  } else {
+    type.value = 'outflow'
+    source.value = 'cash'
+    label.value = ''
+    description.value = ''
+    nominal.value = ''
+  }
+}
+
+// Form diisi ulang setiap kali modal dibuka, sehingga sisa isian lama tidak terbawa
+watch(
+  () => props.open,
+  (open) => {
+    if (open) populate()
+  },
+  { immediate: true },
+)
+
+const validate = (): string => {
+  if (!label.value.trim()) return 'Label wajib diisi.'
+  if (!description.value.trim()) return 'Deskripsi wajib diisi.'
+
+  const amount = Number(nominal.value)
+  if (!Number.isInteger(amount) || amount <= 0) {
+    return 'Nominal harus berupa bilangan bulat lebih dari 0.'
+  }
+  return ''
+}
+
+const onSubmit = (): void => {
+  error.value = validate()
+  if (error.value) return
+
+  emit('submit', {
+    type: type.value,
+    source: source.value,
+    label: label.value.trim(),
+    description: description.value.trim(),
+    nominal: Number(nominal.value),
+  })
+}
+</script>
+
+<template>
+  <BaseModal :open="open" :title="isEdit ? 'Ubah transaksi' : 'Tambah transaksi'" @close="emit('close')">
+    <form class="space-y-5" novalidate @submit.prevent="onSubmit">
+      <fieldset>
+        <legend :class="LABEL_CLASS">Jenis transaksi</legend>
+        <div class="grid grid-cols-2 gap-2">
+          <label v-for="option in TYPE_OPTIONS" :key="option.value" class="relative block">
+            <input
+              v-model="type"
+              type="radio"
+              name="cashflow-type"
+              :value="option.value"
+              class="peer sr-only"
+            />
+            <span
+              class="block cursor-pointer rounded-xl border border-slate-300 px-4 py-2.5 text-center text-sm font-semibold text-slate-600 transition peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500/40"
+            >
+              {{ option.label }}
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div>
+        <label for="cashflow-source" :class="LABEL_CLASS">Sumber dana</label>
+        <select id="cashflow-source" v-model="source" :class="FIELD_CLASS">
+          <option v-for="option in SOURCE_OPTIONS" :key="option.value" :value="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label for="cashflow-label" :class="LABEL_CLASS">Label</label>
+        <input
+          id="cashflow-label"
+          type="text"
+          list="cashflow-label-options"
+          autocomplete="off"
+          placeholder="Contoh: gaji, alat-mandi"
+          :value="label"
+          :class="FIELD_CLASS"
+          @input="onLabelInput"
+        />
+        <datalist id="cashflow-label-options">
+          <option v-for="item in labels" :key="item" :value="item" />
+        </datalist>
+      </div>
+
+      <div>
+        <label for="cashflow-nominal" :class="LABEL_CLASS">Nominal (Rp)</label>
+        <input
+          id="cashflow-nominal"
+          type="number"
+          inputmode="numeric"
+          min="1"
+          step="1"
+          placeholder="0"
+          :value="nominal"
+          :class="FIELD_CLASS"
+          @input="onNominalInput"
+        />
+      </div>
+
+      <div>
+        <label for="cashflow-description" :class="LABEL_CLASS">Deskripsi</label>
+        <textarea
+          id="cashflow-description"
+          rows="3"
+          placeholder="Catatan singkat tentang transaksi ini"
+          :value="description"
+          :class="FIELD_CLASS"
+          @input="onDescriptionInput"
+        />
+      </div>
+
+      <p v-if="error" role="alert" class="text-sm font-medium text-expense">{{ error }}</p>
+
+      <div class="flex justify-end gap-3">
+        <button
+          type="button"
+          class="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+          @click="emit('close')"
+        >
+          Batal
+        </button>
+        <button
+          type="submit"
+          :disabled="saving"
+          class="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {{ isEdit ? 'Simpan perubahan' : 'Simpan transaksi' }}
+        </button>
+      </div>
+    </form>
+  </BaseModal>
+</template>
+
+
+===== src\features\cashflows\cashflowHelper.ts =====
+
+import type { CashFlowFilters, CashFlowStats } from '~/features/cashflows/types'
+
+/** Mengambil satu angka statistik; 0 saat kuncinya belum ada (mis. belum ada transaksi) */
+export const getStat = (stats: CashFlowStats, key: string): number => stats[key] ?? 0
+
+export const hasActiveFilters = (filters: CashFlowFilters): boolean =>
+  Object.values(filters).some((value) => value.trim() !== '')
+
+/**
+ * Mengubah filter UI menjadi query API. Nilai kosong ikut dikirim sebagai string kosong
+ * karena buildUrl() di apiHelper otomatis membuangnya dari URL.
+ */
+export const toApiQuery = (filters: CashFlowFilters): Record<string, string> => ({
+  type: filters.type,
+  source: filters.source,
+  label: filters.label.trim(),
+  start_date: filters.start_date ? `${filters.start_date} 00:00:00` : '',
+  end_date: filters.end_date ? `${filters.end_date} 23:59:59` : '',
+})
+
+
+===== src\features\cashflows\cashflowsApi.ts =====
+
+import type {
+  CashFlowCreatedData,
+  CashFlowData,
+  CashFlowPayload,
+  CashFlowsData,
+  LabelsData,
+  PeriodStats,
+  StatsQuery,
+} from '~/features/cashflows/types'
+import { api } from '~/helpers/apiHelper'
+import type { QueryValue } from '~/helpers/apiHelper'
+
+export const cashflowsApi = {
+  getAll: (query?: Record<string, QueryValue>) => api.get<CashFlowsData>('/cash-flows', query),
+  getById: (id: number) => api.get<CashFlowData>(`/cash-flows/${id}`),
+  create: (payload: CashFlowPayload) =>
+    api.post<CashFlowCreatedData>('/cash-flows', payload),
+  update: (id: number, payload: CashFlowPayload) =>
+    api.put<undefined>(`/cash-flows/${id}`, payload),
+  remove: (id: number) => api.delete<undefined>(`/cash-flows/${id}`),
+  removeAll: () => api.delete<undefined>('/cash-flows'),
+  getLabels: () => api.get<LabelsData>('/cash-flows/labels'),
+  getDailyStats: (query?: StatsQuery) =>
+    api.get<PeriodStats>('/cash-flows/stats/daily', query),
+  getMonthlyStats: (query?: StatsQuery) =>
+    api.get<PeriodStats>('/cash-flows/stats/monthly', query),
+}
+
+
+===== src\features\cashflows\cashflowsStore.ts =====
+
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
+import { getStat, hasActiveFilters, toApiQuery } from '~/features/cashflows/cashflowHelper'
+import { cashflowsApi } from '~/features/cashflows/cashflowsApi'
+import { EMPTY_FILTERS } from '~/features/cashflows/constants'
+import type {
+  CashFlow,
+  CashFlowFilters,
+  CashFlowPayload,
+  CashFlowStats,
+  PeriodStats,
+  StatsQuery,
+} from '~/features/cashflows/types'
+
+export const useCashFlowsStore = defineStore('cashflows', () => {
+  const cashFlows = ref<CashFlow[]>([])
+  const stats = ref<CashFlowStats>({})
+  const filters = ref<CashFlowFilters>({ ...EMPTY_FILTERS })
+  const selected = ref<CashFlow | null>(null)
+  const labels = ref<string[]>([])
+  const dailyStats = ref<PeriodStats | null>(null)
+  const monthlyStats = ref<PeriodStats | null>(null)
+  /** true saat memuat daftar atau detail transaksi */
+  const loading = ref(false)
+  /** true saat menambah, mengubah, atau menghapus transaksi */
+  const saving = ref(false)
+
+  const totalInflow = computed(() => getStat(stats.value, 'total_inflow'))
+  const totalOutflow = computed(() => getStat(stats.value, 'total_outflow'))
+  const balance = computed(() => totalInflow.value - totalOutflow.value)
+  const isFiltered = computed(() => hasActiveFilters(filters.value))
+
+  const setFilters = (next: CashFlowFilters): void => {
+    filters.value = { ...next }
+  }
+
+  const resetFilters = (): void => {
+    filters.value = { ...EMPTY_FILTERS }
+  }
+
+  const fetchCashFlows = async (): Promise<void> => {
+    loading.value = true
+    try {
+      const response = await cashflowsApi.getAll(toApiQuery(filters.value))
+      cashFlows.value = response.data.cash_flows
+      stats.value = response.data.stats
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchCashFlow = async (id: number): Promise<CashFlow> => {
+    loading.value = true
+    try {
+      const response = await cashflowsApi.getById(id)
+      selected.value = response.data.cash_flow
+      return response.data.cash_flow
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchLabels = async (): Promise<void> => {
+    const response = await cashflowsApi.getLabels()
+    labels.value = response.data.labels
+  }
+
+  const fetchDailyStats = async (query?: StatsQuery): Promise<void> => {
+    const response = await cashflowsApi.getDailyStats(query)
+    dailyStats.value = response.data
+  }
+
+  const fetchMonthlyStats = async (query?: StatsQuery): Promise<void> => {
+    const response = await cashflowsApi.getMonthlyStats(query)
+    monthlyStats.value = response.data
+  }
+
+  /** Mengembalikan id transaksi baru. Pemanggil bertugas memuat ulang daftar. */
+  const createCashFlow = async (payload: CashFlowPayload): Promise<number> => {
+    saving.value = true
+    try {
+      const response = await cashflowsApi.create(payload)
+      return response.data.cash_flow_id
+    } finally {
+      saving.value = false
+    }
+  }
+
+  const updateCashFlow = async (id: number, payload: CashFlowPayload): Promise<void> => {
+    saving.value = true
+    try {
+      await cashflowsApi.update(id, payload)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  const deleteCashFlow = async (id: number): Promise<void> => {
+    saving.value = true
+    try {
+      await cashflowsApi.remove(id)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  const deleteAllCashFlows = async (): Promise<void> => {
+    saving.value = true
+    try {
+      await cashflowsApi.removeAll()
+    } finally {
+      saving.value = false
+    }
+  }
+
+  return {
+    cashFlows,
+    stats,
+    filters,
+    selected,
+    labels,
+    dailyStats,
+    monthlyStats,
+    loading,
+    saving,
+    totalInflow,
+    totalOutflow,
+    balance,
+    isFiltered,
+    setFilters,
+    resetFilters,
+    fetchCashFlows,
+    fetchCashFlow,
+    fetchLabels,
+    fetchDailyStats,
+    fetchMonthlyStats,
+    createCashFlow,
+    updateCashFlow,
+    deleteCashFlow,
+    deleteAllCashFlows,
+  }
+})
+
+
+===== src\features\cashflows\constants.ts =====
+
+import type { CashFlowFilters, CashFlowSource, CashFlowType } from '~/features/cashflows/types'
+
+export const TYPE_LABELS: Record<CashFlowType, string> = {
+  inflow: 'Pemasukan',
+  outflow: 'Pengeluaran',
+}
+
+export const SOURCE_LABELS: Record<CashFlowSource, string> = {
+  cash: 'Tunai',
+  savings: 'Tabungan',
+  loans: 'Pinjaman',
+}
+
+export const TYPE_OPTIONS = (Object.keys(TYPE_LABELS) as CashFlowType[]).map((value) => ({
+  value,
+  label: TYPE_LABELS[value],
+}))
+
+export const SOURCE_OPTIONS = (Object.keys(SOURCE_LABELS) as CashFlowSource[]).map((value) => ({
+  value,
+  label: SOURCE_LABELS[value],
+}))
+
+export const EMPTY_FILTERS: CashFlowFilters = {
+  type: '',
+  source: '',
+  label: '',
+  start_date: '',
+  end_date: '',
+}
+
+
+===== src\features\cashflows\types.ts =====
+
+export type CashFlowType = 'inflow' | 'outflow'
+export type CashFlowSource = 'cash' | 'savings' | 'loans'
+
+export interface CashFlow {
+  id: number
+  user_id: number
+  type: CashFlowType
+  source: CashFlowSource
+  label: string
+  description: string
+  nominal: number
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Statistik ringkasan dari GET /cash-flows. Kuncinya dinamis
+ * (total_inflow, total_outflow_cash, total_outflow_label_gaji, ...),
+ * dan bisa kosong saat belum ada transaksi.
+ */
+export type CashFlowStats = Record<string, number>
+
+export interface CashFlowPayload {
+  type: CashFlowType
+  source: CashFlowSource
+  label: string
+  description: string
+  nominal: number
+}
+
+/** Nilai string kosong berarti "semua" (filter tidak aktif) */
+export interface CashFlowFilters {
+  type: CashFlowType | ''
+  source: CashFlowSource | ''
+  label: string
+  /** Format input tanggal browser: YYYY-MM-DD */
+  start_date: string
+  end_date: string
+}
+
+export type StatsQuery = {
+  /** Format API: YYYY-MM-DD HH:mm:ss */
+  end_date?: string
+  total_data?: number
+}
+
+/** Kunci periode: "05-10-2024" (harian) atau "10-2024" (bulanan) */
+export interface PeriodStats {
+  stats_inflow: Record<string, number>
+  stats_outflow: Record<string, number>
+  stats_cashflow: Record<string, number>
+}
+
+export interface CashFlowsData {
+  cash_flows: CashFlow[]
+  stats: CashFlowStats
+}
+
+export interface CashFlowData {
+  cash_flow: CashFlow
+}
+
+export interface CashFlowCreatedData {
+  cash_flow_id: number
+}
+
+export interface LabelsData {
+  labels: string[]
+}
+
+
+===== src\features\users\components\UserAvatar.vue =====
+
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue'
+import { getInitial, resolvePhotoUrl } from '~/features/users/userHelper'
+import { BASE_URL } from '~/helpers/apiHelper'
+
+const props = defineProps<{
+  name: string
+  photo?: string | null
+}>()
+
+// Foto yang gagal dimuat (mis. URL localhost dari server) diganti inisial nama
+const failed = ref(false)
+
+const src = computed(() => resolvePhotoUrl(props.photo ?? null, BASE_URL))
+
+watch(
+  () => props.photo,
+  () => {
+    failed.value = false
+  },
+)
+</script>
+
+<template>
+  <img
+    v-if="src && !failed"
+    :src="src"
+    :alt="`Foto profil ${name}`"
+    class="shrink-0 rounded-full object-cover"
+    @error="failed = true"
+  />
+  <span
+    v-else
+    class="flex shrink-0 select-none items-center justify-center rounded-full bg-brand-600 font-bold text-white"
+    aria-hidden="true"
+  >
+    {{ getInitial(name) }}
+  </span>
+</template>
+
+
+===== src\features\users\pages\ProfilePage.vue =====
+
+<script setup lang="ts">
+import { Camera, KeyRound, Save } from 'lucide-vue-next'
+import { computed, onMounted } from 'vue'
+import UserAvatar from '~/features/users/components/UserAvatar.vue'
+import { useUsersStore } from '~/features/users/usersStore'
+import { getErrorMessage, showError, showSuccess } from '~/helpers/toolsHelper'
+import { useInput } from '~/hooks/useInput'
+
+const MIN_PASSWORD_LENGTH = 6
+const INPUT_CLASS =
+  'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30'
+
+const usersStore = useUsersStore()
+
+const { value: name, onInput: onNameInput } = useInput<string>('')
+const { value: email, onInput: onEmailInput } = useInput<string>('')
+const {
+  value: currentPassword,
+  onInput: onCurrentPasswordInput,
+  reset: resetCurrentPassword,
+} = useInput<string>('')
+const {
+  value: newPassword,
+  onInput: onNewPasswordInput,
+  reset: resetNewPassword,
+} = useInput<string>('')
+const {
+  value: confirmPassword,
+  onInput: onConfirmPasswordInput,
+  reset: resetConfirmPassword,
+} = useInput<string>('')
+
+const displayName = computed(() => usersStore.profile?.name ?? '')
+const displayEmail = computed(() => usersStore.profile?.email ?? '')
+const displayPhoto = computed(() => usersStore.profile?.photo ?? null)
+
+onMounted(async () => {
+  try {
+    const profile = await usersStore.fetchProfile()
+    name.value = profile.name
+    email.value = profile.email
+  } catch (error) {
+    await showError(getErrorMessage(error))
+  }
+})
+
+const onSaveProfile = async (): Promise<void> => {
+  if (!name.value.trim() || !email.value.trim()) {
+    await showError('Nama dan email wajib diisi.')
+    return
+  }
+
+  try {
+    await usersStore.updateProfile({ name: name.value.trim(), email: email.value.trim() })
+    void showSuccess('Profil berhasil diperbarui.')
+  } catch (error) {
+    await showError(getErrorMessage(error))
+  }
+}
+
+const onPhotoChange = async (event: Event): Promise<void> => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  // Dikosongkan agar memilih file yang sama dua kali tetap memicu event change
+  input.value = ''
+  if (!file) return
+
+  if (!file.type.startsWith('image/')) {
+    await showError('Pilih file gambar (PNG atau JPG).')
+    return
+  }
+
+  try {
+    await usersStore.changePhoto(file)
+    void showSuccess('Foto profil berhasil diperbarui.')
+  } catch (error) {
+    await showError(getErrorMessage(error))
+  }
+}
+
+const onChangePassword = async (): Promise<void> => {
+  if (!currentPassword.value || !newPassword.value || !confirmPassword.value) {
+    await showError('Semua kolom kata sandi wajib diisi.')
+    return
+  }
+
+  if (newPassword.value.length < MIN_PASSWORD_LENGTH) {
+    await showError(`Kata sandi baru minimal ${MIN_PASSWORD_LENGTH} karakter.`)
+    return
+  }
+
+  if (newPassword.value !== confirmPassword.value) {
+    await showError('Konfirmasi kata sandi tidak sama dengan kata sandi baru.')
+    return
+  }
+
+  try {
+    await usersStore.changePassword({
+      password: currentPassword.value,
+      new_password: newPassword.value,
+      new_password_confirmation: confirmPassword.value,
+    })
+    resetCurrentPassword()
+    resetNewPassword()
+    resetConfirmPassword()
+    void showSuccess('Kata sandi berhasil diubah.')
+  } catch (error) {
+    await showError(getErrorMessage(error))
+  }
+}
+</script>
+
+<template>
+  <section class="mx-auto w-full max-w-3xl space-y-6">
+    <header>
+      <h1 class="text-2xl font-extrabold text-slate-900">Profil saya</h1>
+      <p class="mt-1 text-sm text-slate-500">Kelola data akun dan keamanan kata sandi Anda.</p>
+    </header>
+
+    <div
+      class="flex flex-col items-center gap-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row"
+    >
+      <UserAvatar :name="displayName" :photo="displayPhoto" class="h-24 w-24 text-3xl" />
+
+      <div class="min-w-0 flex-1 text-center sm:text-left">
+        <p class="truncate text-lg font-bold text-slate-900">{{ displayName }}</p>
+        <p class="truncate text-sm text-slate-500">{{ displayEmail }}</p>
+      </div>
+
+      <label
+        class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-within:ring-2 focus-within:ring-brand-500/30"
+      >
+        <Camera class="h-4 w-4" aria-hidden="true" />
+        Ganti foto
+        <input
+          type="file"
+          accept="image/*"
+          class="sr-only"
+          :disabled="usersStore.saving"
+          @change="onPhotoChange"
+        />
+      </label>
+    </div>
+
+    <form
+      id="profile-form"
+      class="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      novalidate
+      @submit.prevent="onSaveProfile"
+    >
+      <h2 class="text-base font-bold text-slate-900">Data akun</h2>
+
+      <div>
+        <label for="profile-name" class="mb-1.5 block text-sm font-semibold text-slate-700">
+          Nama
+        </label>
+        <input
+          id="profile-name"
+          type="text"
+          autocomplete="name"
+          :value="name"
+          :class="INPUT_CLASS"
+          @input="onNameInput"
+        />
+      </div>
+
+      <div>
+        <label for="profile-email" class="mb-1.5 block text-sm font-semibold text-slate-700">
+          Email
+        </label>
+        <input
+          id="profile-email"
+          type="email"
+          autocomplete="email"
+          :value="email"
+          :class="INPUT_CLASS"
+          @input="onEmailInput"
+        />
+      </div>
+
+      <button
+        type="submit"
+        :disabled="usersStore.saving"
+        class="flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <Save class="h-4 w-4" aria-hidden="true" />
+        Simpan perubahan
+      </button>
+    </form>
+
+    <form
+      id="password-form"
+      class="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      novalidate
+      @submit.prevent="onChangePassword"
+    >
+      <h2 class="text-base font-bold text-slate-900">Ubah kata sandi</h2>
+
+      <div>
+        <label for="current-password" class="mb-1.5 block text-sm font-semibold text-slate-700">
+          Kata sandi saat ini
+        </label>
+        <input
+          id="current-password"
+          type="password"
+          autocomplete="current-password"
+          :value="currentPassword"
+          :class="INPUT_CLASS"
+          @input="onCurrentPasswordInput"
+        />
+      </div>
+
+      <div>
+        <label for="new-password" class="mb-1.5 block text-sm font-semibold text-slate-700">
+          Kata sandi baru
+        </label>
+        <input
+          id="new-password"
+          type="password"
+          autocomplete="new-password"
+          placeholder="Minimal 6 karakter"
+          :value="newPassword"
+          :class="INPUT_CLASS"
+          @input="onNewPasswordInput"
+        />
+      </div>
+
+      <div>
+        <label for="confirm-password" class="mb-1.5 block text-sm font-semibold text-slate-700">
+          Ulangi kata sandi baru
+        </label>
+        <input
+          id="confirm-password"
+          type="password"
+          autocomplete="new-password"
+          :value="confirmPassword"
+          :class="INPUT_CLASS"
+          @input="onConfirmPasswordInput"
+        />
+      </div>
+
+      <button
+        type="submit"
+        :disabled="usersStore.saving"
+        class="flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <KeyRound class="h-4 w-4" aria-hidden="true" />
+        Ubah kata sandi
+      </button>
+    </form>
+  </section>
+</template>
+
+
+===== src\features\users\pages\UsersPage.vue =====
+
+<script setup lang="ts">
+import { Search } from 'lucide-vue-next'
+import { computed, onMounted } from 'vue'
+import UserAvatar from '~/features/users/components/UserAvatar.vue'
+import { useUsersStore } from '~/features/users/usersStore'
+import { getErrorMessage, showError } from '~/helpers/toolsHelper'
+import { useInput } from '~/hooks/useInput'
+
+const usersStore = useUsersStore()
+
+const { value: keyword, onInput: onKeywordInput } = useInput<string>('')
+
+const filteredUsers = computed(() => {
+  const query = keyword.value.trim().toLowerCase()
+  if (!query) return usersStore.users
+
+  return usersStore.users.filter(
+    (user) => user.name.toLowerCase().includes(query) || user.email.toLowerCase().includes(query),
+  )
+})
+
+const emptyMessage = computed(() =>
+  keyword.value.trim()
+    ? 'Tidak ada pengguna yang cocok. Coba kata kunci lain.'
+    : 'Belum ada pengguna terdaftar.',
+)
+
+onMounted(async () => {
+  try {
+    await usersStore.fetchUsers()
+  } catch (error) {
+    await showError(getErrorMessage(error))
+  }
+})
+</script>
+
+<template>
+  <section class="mx-auto w-full max-w-4xl space-y-6">
+    <header>
+      <h1 class="text-2xl font-extrabold text-slate-900">Direktori pengguna</h1>
+      <p class="mt-1 text-sm text-slate-500">Daftar semua pengguna yang terdaftar di Delcom.</p>
+    </header>
+
+    <div>
+      <label for="search-users" class="sr-only">Cari pengguna</label>
+      <div class="relative">
+        <Search
+          class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          aria-hidden="true"
+        />
+        <input
+          id="search-users"
+          type="search"
+          placeholder="Cari berdasarkan nama atau email"
+          :value="keyword"
+          class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-11 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          @input="onKeywordInput"
+        />
+      </div>
+      <p class="mt-2 text-xs text-slate-500">
+        {{ filteredUsers.length }} dari {{ usersStore.users.length }} pengguna
+      </p>
+    </div>
+
+    <p v-if="usersStore.loading" role="status" class="py-10 text-center text-sm text-slate-500">
+      Memuat pengguna...
+    </p>
+
+    <p
+      v-else-if="filteredUsers.length === 0"
+      class="rounded-2xl border border-dashed border-slate-300 bg-white py-10 text-center text-sm text-slate-500"
+    >
+      {{ emptyMessage }}
+    </p>
+
+    <ul v-else class="grid gap-3 sm:grid-cols-2">
+      <li
+        v-for="user in filteredUsers"
+        :key="user.id"
+        class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+      >
+        <UserAvatar :name="user.name" :photo="user.photo" class="h-12 w-12 text-lg" />
+        <div class="min-w-0">
+          <p class="truncate text-sm font-bold text-slate-900">{{ user.name }}</p>
+          <p class="truncate text-sm text-slate-500">{{ user.email }}</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+</template>
+
+
+===== src\features\users\types.ts =====
+
+export interface UserProfile {
+  id: number
+  name: string
+  email: string
+  email_verified_at: string | null
+  /** URL penuh, path relatif (mis. "img/profile/3_1709251633.png"), atau null */
+  photo: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface UsersData {
+  users: UserProfile[]
+}
+
+export interface UserData {
+  user: UserProfile
+}
+
+export interface UpdateProfilePayload {
+  name: string
+  email: string
+}
+
+export interface ChangePasswordPayload {
+  password: string
+  new_password: string
+  new_password_confirmation: string
+}
+
+
+===== src\features\users\userHelper.ts =====
+
+/**
+ * Mengubah nilai `photo` dari API menjadi URL yang bisa dipakai <img>.
+ * API mengembalikan URL penuh (daftar user) atau path relatif (profil saya).
+ */
+export const resolvePhotoUrl = (photo: string | null, baseUrl: string): string | null => {
+  if (!photo) return null
+  if (/^https?:\/\//i.test(photo)) return photo
+
+  const origin = baseUrl.replace(/\/api\/v\d+\/?$/, '').replace(/\/+$/, '')
+  return `${origin}/${photo.replace(/^\/+/, '')}`
+}
+
+/** Huruf pertama nama (kapital) untuk avatar pengganti foto */
+export const getInitial = (name: string): string => name.trim().charAt(0).toUpperCase() || '?'
+
+
+===== src\features\users\usersApi.ts =====
+
+import type {
+  ChangePasswordPayload,
+  UpdateProfilePayload,
+  UserData,
+  UsersData,
+} from '~/features/users/types'
+import { api } from '~/helpers/apiHelper'
+
+export const usersApi = {
+  getAll: () => api.get<UsersData>('/users'),
+  getById: (id: number) => api.get<UserData>(`/users/${id}`),
+  getProfile: () => api.get<UserData>('/users/me'),
+  updateProfile: (payload: UpdateProfilePayload) => api.put<UserData>('/users/me', payload),
+  changePhoto: (photo: File) => {
+    const form = new FormData()
+    form.append('photo', photo)
+    return api.post<undefined>('/users/me/photo', form)
+  },
+  changePassword: (payload: ChangePasswordPayload) =>
+    api.put<undefined>('/users/password', payload),
+}
+
+
+===== src\features\users\usersStore.ts =====
+
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import type {
+  ChangePasswordPayload,
+  UpdateProfilePayload,
+  UserProfile,
+} from '~/features/users/types'
+import { usersApi } from '~/features/users/usersApi'
+
+export const useUsersStore = defineStore('users', () => {
+  const users = ref<UserProfile[]>([])
+  const selectedUser = ref<UserProfile | null>(null)
+  const profile = ref<UserProfile | null>(null)
+  /** true saat memuat data (daftar user, detail user, profil) */
+  const loading = ref(false)
+  /** true saat menyimpan perubahan (profil, foto, kata sandi) */
+  const saving = ref(false)
+
+  const fetchUsers = async (): Promise<void> => {
+    loading.value = true
+    try {
+      const response = await usersApi.getAll()
+      users.value = response.data.users
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchUserById = async (id: number): Promise<UserProfile> => {
+    loading.value = true
+    try {
+      const response = await usersApi.getById(id)
+      selectedUser.value = response.data.user
+      return response.data.user
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchProfile = async (): Promise<UserProfile> => {
+    loading.value = true
+    try {
+      const response = await usersApi.getProfile()
+      profile.value = response.data.user
+      return response.data.user
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateProfile = async (payload: UpdateProfilePayload): Promise<void> => {
+    saving.value = true
+    try {
+      const response = await usersApi.updateProfile(payload)
+      profile.value = response.data.user
+    } finally {
+      saving.value = false
+    }
+  }
+
+  const changePhoto = async (photo: File): Promise<void> => {
+    saving.value = true
+    try {
+      await usersApi.changePhoto(photo)
+      // Respons upload tidak membawa data user, jadi profil diambil ulang
+      const response = await usersApi.getProfile()
+      profile.value = response.data.user
+    } finally {
+      saving.value = false
+    }
+  }
+
+  const changePassword = async (payload: ChangePasswordPayload): Promise<void> => {
+    saving.value = true
+    try {
+      await usersApi.changePassword(payload)
+    } finally {
+      saving.value = false
+    }
+  }
+
+  return {
+    users,
+    selectedUser,
+    profile,
+    loading,
+    saving,
+    fetchUsers,
+    fetchUserById,
+    fetchProfile,
+    updateProfile,
+    changePhoto,
+    changePassword,
+  }
+})
+
+
+===== src\helpers\apiHelper.ts =====
+
+export const TOKEN_KEY = 'delcom_cashflow_token'
+export const BASE_URL: string = import.meta.env.DELCOM_BASEURL
+
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+export type QueryValue = string | number | boolean | null | undefined
+
+export interface ApiResponse<T = unknown> {
+  status: 'success' | 'fail'
+  message: string
+  data: T
+}
+
+export interface RequestOptions {
+  method?: HttpMethod
+  body?: unknown
+  query?: Record<string, QueryValue>
+  auth?: boolean
+}
+
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
+export const getToken = (): string | null => localStorage.getItem(TOKEN_KEY)
+
+export const setToken = (token: string): void => {
+  localStorage.setItem(TOKEN_KEY, token)
+}
+
+export const removeToken = (): void => {
+  localStorage.removeItem(TOKEN_KEY)
+}
+
+export const buildUrl = (path: string, query?: Record<string, QueryValue>): string => {
+  const url = `${BASE_URL}${path}`
+  if (!query) return url
+
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === null || value === '') continue
+    params.append(key, String(value))
+  }
+
+  const queryString = params.toString()
+  return queryString ? `${url}?${queryString}` : url
+}
+
+// FormData (mis. upload foto) dikirim apa adanya agar browser mengatur boundary multipart sendiri
+const serializeBody = (body: unknown): BodyInit | undefined => {
+  if (body === undefined) return undefined
+  return body instanceof FormData ? body : JSON.stringify(body)
+}
+
+export async function request<T = unknown>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<ApiResponse<T>> {
+  const { method = 'GET', body, query, auth = true } = options
+
+  const headers: Record<string, string> = { Accept: 'application/json' }
+  if (body !== undefined && !(body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  const token = getToken()
+  if (auth && token) headers.Authorization = `Bearer ${token}`
+
+  let response: Response
+  try {
+    response = await fetch(buildUrl(path, query), {
+      method,
+      headers,
+      body: serializeBody(body),
+    })
+  } catch {
+    throw new ApiError('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.', 0)
+  }
+
+  let payload: ApiResponse<T> | null
+  try {
+    payload = (await response.json()) as ApiResponse<T>
+  } catch {
+    payload = null
+  }
+
+  if (response.status === 401 && auth) removeToken()
+
+  if (!response.ok || payload === null || payload.status !== 'success') {
+    throw new ApiError(payload?.message ?? `Permintaan gagal (${response.status})`, response.status)
+  }
+
+  return payload
+}
+
+export const api = {
+  get: <T = unknown>(path: string, query?: Record<string, QueryValue>) =>
+    request<T>(path, { method: 'GET', query }),
+  post: <T = unknown>(path: string, body?: unknown, options?: Pick<RequestOptions, 'auth'>) =>
+    request<T>(path, { ...options, method: 'POST', body }),
+  put: <T = unknown>(path: string, body?: unknown) =>
+    request<T>(path, { method: 'PUT', body }),
+  delete: <T = unknown>(path: string) => request<T>(path, { method: 'DELETE' }),
+}
+
+
+===== src\helpers\toolsHelper.ts =====
+
+import Swal from 'sweetalert2'
+
+export interface ConfirmOptions {
+  title: string
+  text?: string
+  confirmText?: string
+  cancelText?: string
+}
+
+const BRAND_COLOR = '#4f46e5'
+
+export const showSuccess = (message: string, title = 'Berhasil') =>
+  Swal.fire({
+    icon: 'success',
+    title,
+    text: message,
+    timer: 2000,
+    showConfirmButton: false,
+  })
+
+export const showError = (message: string, title = 'Gagal') =>
+  Swal.fire({
+    icon: 'error',
+    title,
+    text: message,
+    confirmButtonColor: BRAND_COLOR,
+  })
+
+export const showConfirm = async ({
+  title,
+  text,
+  confirmText = 'Ya',
+  cancelText = 'Batal',
+}: ConfirmOptions): Promise<boolean> => {
+  const result = await Swal.fire({
+    icon: 'warning',
+    title,
+    text,
+    showCancelButton: true,
+    confirmButtonText: confirmText,
+    cancelButtonText: cancelText,
+    confirmButtonColor: BRAND_COLOR,
+  })
+  return result.isConfirmed
+}
+
+export const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : 'Terjadi kesalahan yang tidak terduga.'
+
+export const formatCurrency = (amount: number): string =>
+  new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0,
+  }).format(amount)
+
+export const formatDate = (value: string | number | Date): string => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+
+  return new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Asia/Jakarta',
+  }).format(date)
+}
+
+
+===== src\hooks\useInput.ts =====
+
+import { ref } from 'vue'
+import type { Ref } from 'vue'
+
+export interface UseInputReturn<T extends string | number> {
+  value: Ref<T>
+  onInput: (event: Event) => void
+  reset: () => void
+}
+
+type InputElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+
+export function useInput<T extends string | number = string>(initialValue: T): UseInputReturn<T> {
+  const value = ref(initialValue) as Ref<T>
+
+  const onInput = (event: Event): void => {
+    const raw = (event.target as InputElement).value
+    value.value = (typeof initialValue === 'number' ? Number(raw) : raw) as T
+  }
+
+  const reset = (): void => {
+    value.value = initialValue
+  }
+
+  return { value, onInput, reset }
+}
+
+
+===== src\pages\HomePage.vue =====
+
+<template>
+  <h1>Delcom Cash Flow</h1>
+</template>
+
+
+===== src\app.vue =====
+
+<script setup lang="ts">
+import { NuxtPage } from '#components'
+</script>
+
+<template>
+  <NuxtPage />
+</template>
+
+
+===== src\env.d.ts =====
+
+interface ImportMetaEnv {
+  readonly DELCOM_BASEURL: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+
+
+===== src\router.options.ts =====
+
+import type { RouterConfig } from '@nuxt/schema'
+
+export default {
+  routes: () => [
+    {
+      name: 'home',
+      path: '/',
+      component: () => import('~/pages/HomePage.vue'),
+    },
+  ],
+} satisfies RouterConfig
+
+
+===== src\setupTests.ts =====
+
+import '@testing-library/jest-dom/vitest'
+import { enableAutoUnmount } from '@vue/test-utils'
+import { afterEach, beforeEach, vi } from 'vitest'
+
+// Otomatis unmount semua komponen setelah tiap test
+enableAutoUnmount(afterEach)
+
+beforeEach(() => {
+  // jsdom tidak mengimplementasikan scrollTo
+  window.scrollTo = vi.fn()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+  document.body.innerHTML = ''
+  localStorage.clear()
+  sessionStorage.clear()
+})
+
+===== src\test-utils.ts =====
+
+import { createTestingPinia } from '@pinia/testing'
+import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
+import type { GlobalMountOptions } from '@vue/test-utils'
+import { vi } from 'vitest'
+import { createMemoryHistory, createRouter } from 'vue-router'
+import type { Router, RouteRecordRaw } from 'vue-router'
+import { defineComponent, h } from 'vue'
+import type { Component, DefineComponent } from 'vue'
+
+export interface RenderOptions {
+  /** State awal store Pinia, contoh: { auth: { token: 'abc' } } */
+  initialState?: Record<string, unknown>
+  /** true = semua action store di-stub (default). false = action asli dijalankan */
+  stubActions?: boolean
+  props?: Record<string, unknown>
+  slots?: Record<string, string>
+  /** Router asli (memory history). Jika diisi, RouterLink tidak di-stub */
+  router?: Router
+  global?: GlobalMountOptions
+}
+
+const BlankPage = defineComponent({ render: () => h('div') })
+
+/** Router in-memory untuk menguji navigasi tanpa browser */
+export function createMockRouter(
+  routes: RouteRecordRaw[] = [{ path: '/:pathMatch(.*)*', component: BlankPage }],
+): Router {
+  return createRouter({ history: createMemoryHistory(), routes })
+}
+
+/** Mount komponen dengan Pinia testing (spy via vi.fn) dan stub RouterLink/NuxtLink */
+export function renderWithProviders(component: Component, options: RenderOptions = {}) {
+  const { initialState, stubActions = true, props, slots, router, global = {} } = options
+
+  const pinia = createTestingPinia({
+    initialState,
+    stubActions,
+    createSpy: vi.fn,
+  })
+
+  const wrapper = mount(component as DefineComponent, {
+    props,
+    slots,
+    global: {
+      ...global,
+      plugins: [pinia, ...(router ? [router] : []), ...(global.plugins ?? [])],
+      stubs: {
+        ...(router ? {} : { RouterLink: RouterLinkStub, NuxtLink: RouterLinkStub }),
+        ...global.stubs,
+      },
+    },
+  })
+
+  return { wrapper, pinia, router }
+}
+
+export { flushPromises }
+
+===== src\features\cashflows\cashflowsStore.test.ts =====
+
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { cashflowsApi } from '~/features/cashflows/cashflowsApi'
+import { useCashFlowsStore } from '~/features/cashflows/cashflowsStore'
+import { EMPTY_FILTERS } from '~/features/cashflows/constants'
+import type {
+  CashFlow,
+  CashFlowCreatedData,
+  CashFlowData,
+  CashFlowPayload,
+  CashFlowsData,
+  LabelsData,
+  PeriodStats,
+} from '~/features/cashflows/types'
+import type { ApiResponse } from '~/helpers/apiHelper'
+
+vi.mock('~/features/cashflows/cashflowsApi', () => ({
+  cashflowsApi: {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+    removeAll: vi.fn(),
+    getLabels: vi.fn(),
+    getDailyStats: vi.fn(),
+    getMonthlyStats: vi.fn(),
+  },
+}))
+
+const api = vi.mocked(cashflowsApi)
+
+const gaji: CashFlow = {
+  id: 2,
+  user_id: 1,
+  type: 'inflow',
+  source: 'cash',
+  label: 'gaji',
+  description: 'Gaji bulanan',
+  nominal: 2500000,
+  created_at: '2026-10-05T11:26:45.000000Z',
+  updated_at: '2026-10-05T11:26:48.000000Z',
+}
+
+const keyboard: CashFlow = {
+  ...gaji,
+  id: 4,
+  type: 'outflow',
+  source: 'savings',
+  label: 'alat-elektronik',
+  nominal: 400000,
+}
+
+const payload: CashFlowPayload = {
+  type: 'outflow',
+  source: 'savings',
+  label: 'alat-elektronik',
+  description: 'Keyboard dan mouse',
+  nominal: 400000,
+}
+
+const periodStats: PeriodStats = {
+  stats_inflow: { '05-10-2026': 2500000 },
+  stats_outflow: { '05-10-2026': 400000 },
+  stats_cashflow: { '05-10-2026': 2100000 },
+}
+
+const ok = <T>(data: T): ApiResponse<T> => ({ status: 'success', message: 'OK', data })
+
+describe('cashflowsStore', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    setActivePinia(createPinia())
+  })
+
+  it('memiliki state awal kosong', () => {
+    const store = useCashFlowsStore()
+
+    expect(store.cashFlows).toEqual([])
+    expect(store.stats).toEqual({})
+    expect(store.filters).toEqual(EMPTY_FILTERS)
+    expect(store.selected).toBeNull()
+    expect(store.labels).toEqual([])
+    expect(store.dailyStats).toBeNull()
+    expect(store.monthlyStats).toBeNull()
+    expect(store.loading).toBe(false)
+    expect(store.saving).toBe(false)
+    expect(store.totalInflow).toBe(0)
+    expect(store.totalOutflow).toBe(0)
+    expect(store.balance).toBe(0)
+    expect(store.isFiltered).toBe(false)
+  })
+
+  describe('filter', () => {
+    it('setFilters menyimpan salinan filter dan mengaktifkan isFiltered', () => {
+      const store = useCashFlowsStore()
+      const next: typeof EMPTY_FILTERS = { ...EMPTY_FILTERS, type: 'inflow' }
+
+      store.setFilters(next)
+      next.type = 'outflow'
+
+      expect(store.filters.type).toBe('inflow')
+      expect(store.isFiltered).toBe(true)
+    })
+
+    it('resetFilters mengosongkan semua filter', () => {
+      const store = useCashFlowsStore()
+      store.setFilters({ ...EMPTY_FILTERS, label: 'gaji' })
+
+      store.resetFilters()
+
+      expect(store.filters).toEqual(EMPTY_FILTERS)
+      expect(store.isFiltered).toBe(false)
+    })
+  })
+
+  describe('fetchCashFlows', () => {
+    const data: CashFlowsData = {
+      cash_flows: [keyboard, gaji],
+      stats: { total_inflow: 2500000, total_outflow: 400000 },
+    }
+
+    it('mengisi daftar, statistik, dan total tanpa filter', async () => {
+      api.getAll.mockResolvedValue(ok(data))
+      const store = useCashFlowsStore()
+
+      await store.fetchCashFlows()
+
+      expect(api.getAll).toHaveBeenCalledWith({
+        type: '',
+        source: '',
+        label: '',
+        start_date: '',
+        end_date: '',
+      })
+      expect(store.cashFlows).toEqual([keyboard, gaji])
+      expect(store.totalInflow).toBe(2500000)
+      expect(store.totalOutflow).toBe(400000)
+      expect(store.balance).toBe(2100000)
+      expect(store.loading).toBe(false)
+    })
+
+    it('mengirim filter aktif sebagai query API', async () => {
+      api.getAll.mockResolvedValue(ok(data))
+      const store = useCashFlowsStore()
+      store.setFilters({
+        type: 'outflow',
+        source: 'savings',
+        label: 'alat-elektronik',
+        start_date: '2026-10-01',
+        end_date: '2026-10-31',
+      })
+
+      await store.fetchCashFlows()
+
+      expect(api.getAll).toHaveBeenCalledWith({
+        type: 'outflow',
+        source: 'savings',
+        label: 'alat-elektronik',
+        start_date: '2026-10-01 00:00:00',
+        end_date: '2026-10-31 23:59:59',
+      })
+    })
+
+    it('loading bernilai true selama request berjalan', async () => {
+      let resolve!: (value: ApiResponse<CashFlowsData>) => void
+      api.getAll.mockReturnValue(new Promise((r) => { resolve = r }))
+      const store = useCashFlowsStore()
+
+      const pending = store.fetchCashFlows()
+      expect(store.loading).toBe(true)
+
+      resolve(ok(data))
+      await pending
+      expect(store.loading).toBe(false)
+    })
+
+    it('melempar ulang error dan mengembalikan loading ke false', async () => {
+      api.getAll.mockRejectedValue(new Error('Unauthenticated.'))
+      const store = useCashFlowsStore()
+
+      await expect(store.fetchCashFlows()).rejects.toThrow('Unauthenticated.')
+      expect(store.loading).toBe(false)
+      expect(store.cashFlows).toEqual([])
+    })
+
+    it('saldo menjadi negatif saat pengeluaran lebih besar', async () => {
+      api.getAll.mockResolvedValue(
+        ok<CashFlowsData>({ cash_flows: [], stats: { total_inflow: 100, total_outflow: 300 } }),
+      )
+      const store = useCashFlowsStore()
+
+      await store.fetchCashFlows()
+
+      expect(store.balance).toBe(-200)
+    })
+  })
+
+  describe('fetchCashFlow', () => {
+    it('menyimpan dan mengembalikan transaksi terpilih', async () => {
+      api.getById.mockResolvedValue(ok<CashFlowData>({ cash_flow: keyboard }))
+      const store = useCashFlowsStore()
+
+      await expect(store.fetchCashFlow(4)).resolves.toEqual(keyboard)
+
+      expect(api.getById).toHaveBeenCalledWith(4)
+      expect(store.selected).toEqual(keyboard)
+      expect(store.loading).toBe(false)
+    })
+
+    it('melempar ulang error dan mengembalikan loading ke false', async () => {
+      api.getById.mockRejectedValue(new Error('Data tidak ditemukan'))
+      const store = useCashFlowsStore()
+
+      await expect(store.fetchCashFlow(99)).rejects.toThrow('Data tidak ditemukan')
+      expect(store.selected).toBeNull()
+      expect(store.loading).toBe(false)
+    })
+  })
+
+  describe('fetchLabels', () => {
+    it('mengisi daftar label', async () => {
+      api.getLabels.mockResolvedValue(ok<LabelsData>({ labels: ['gaji', 'alat-mandi'] }))
+      const store = useCashFlowsStore()
+
+      await store.fetchLabels()
+
+      expect(store.labels).toEqual(['gaji', 'alat-mandi'])
+    })
+  })
+
+  describe('statistik periode', () => {
+    it('fetchDailyStats menyimpan statistik harian dengan query', async () => {
+      api.getDailyStats.mockResolvedValue(ok(periodStats))
+      const store = useCashFlowsStore()
+      const query = { total_data: 7 }
+
+      await store.fetchDailyStats(query)
+
+      expect(api.getDailyStats).toHaveBeenCalledWith(query)
+      expect(store.dailyStats).toEqual(periodStats)
+    })
+
+    it('fetchDailyStats berjalan tanpa query', async () => {
+      api.getDailyStats.mockResolvedValue(ok(periodStats))
+      const store = useCashFlowsStore()
+
+      await store.fetchDailyStats()
+
+      expect(api.getDailyStats).toHaveBeenCalledWith(undefined)
+    })
+
+    it('fetchMonthlyStats menyimpan statistik bulanan dengan query', async () => {
+      api.getMonthlyStats.mockResolvedValue(ok(periodStats))
+      const store = useCashFlowsStore()
+      const query = { total_data: 12 }
+
+      await store.fetchMonthlyStats(query)
+
+      expect(api.getMonthlyStats).toHaveBeenCalledWith(query)
+      expect(store.monthlyStats).toEqual(periodStats)
+    })
+
+    it('fetchMonthlyStats berjalan tanpa query', async () => {
+      api.getMonthlyStats.mockResolvedValue(ok(periodStats))
+      const store = useCashFlowsStore()
+
+      await store.fetchMonthlyStats()
+
+      expect(api.getMonthlyStats).toHaveBeenCalledWith(undefined)
+    })
+  })
+
+  describe('createCashFlow', () => {
+    it('mengembalikan id transaksi baru', async () => {
+      api.create.mockResolvedValue(ok<CashFlowCreatedData>({ cash_flow_id: 9 }))
+      const store = useCashFlowsStore()
+
+      await expect(store.createCashFlow(payload)).resolves.toBe(9)
+
+      expect(api.create).toHaveBeenCalledWith(payload)
+      expect(store.saving).toBe(false)
+    })
+
+    it('saving bernilai true selama request berjalan', async () => {
+      let resolve!: (value: ApiResponse<CashFlowCreatedData>) => void
+      api.create.mockReturnValue(new Promise((r) => { resolve = r }))
+      const store = useCashFlowsStore()
+
+      const pending = store.createCashFlow(payload)
+      expect(store.saving).toBe(true)
+
+      resolve(ok<CashFlowCreatedData>({ cash_flow_id: 1 }))
+      await pending
+      expect(store.saving).toBe(false)
+    })
+
+    it('melempar ulang error dan mengembalikan saving ke false', async () => {
+      api.create.mockRejectedValue(new Error('Data tidak valid'))
+      const store = useCashFlowsStore()
+
+      await expect(store.createCashFlow(payload)).rejects.toThrow('Data tidak valid')
+      expect(store.saving).toBe(false)
+    })
+  })
+
+  describe('updateCashFlow', () => {
+    it('memanggil API dan mengembalikan saving ke false', async () => {
+      api.update.mockResolvedValue(ok(undefined))
+      const store = useCashFlowsStore()
+
+      await store.updateCashFlow(4, payload)
+
+      expect(api.update).toHaveBeenCalledWith(4, payload)
+      expect(store.saving).toBe(false)
+    })
+
+    it('melempar ulang error dan mengembalikan saving ke false', async () => {
+      api.update.mockRejectedValue(new Error('Data tidak valid'))
+      const store = useCashFlowsStore()
+
+      await expect(store.updateCashFlow(4, payload)).rejects.toThrow('Data tidak valid')
+      expect(store.saving).toBe(false)
+    })
+  })
+
+  describe('deleteCashFlow', () => {
+    it('memanggil API dan mengembalikan saving ke false', async () => {
+      api.remove.mockResolvedValue(ok(undefined))
+      const store = useCashFlowsStore()
+
+      await store.deleteCashFlow(4)
+
+      expect(api.remove).toHaveBeenCalledWith(4)
+      expect(store.saving).toBe(false)
+    })
+
+    it('melempar ulang error dan mengembalikan saving ke false', async () => {
+      api.remove.mockRejectedValue(new Error('Data tidak ditemukan'))
+      const store = useCashFlowsStore()
+
+      await expect(store.deleteCashFlow(4)).rejects.toThrow('Data tidak ditemukan')
+      expect(store.saving).toBe(false)
+    })
+  })
+
+  describe('deleteAllCashFlows', () => {
+    it('memanggil API dan mengembalikan saving ke false', async () => {
+      api.removeAll.mockResolvedValue(ok(undefined))
+      const store = useCashFlowsStore()
+
+      await store.deleteAllCashFlows()
+
+      expect(api.removeAll).toHaveBeenCalledOnce()
+      expect(store.saving).toBe(false)
+    })
+
+    it('melempar ulang error dan mengembalikan saving ke false', async () => {
+      api.removeAll.mockRejectedValue(new Error('Unauthenticated.'))
+      const store = useCashFlowsStore()
+
+      await expect(store.deleteAllCashFlows()).rejects.toThrow('Unauthenticated.')
+      expect(store.saving).toBe(false)
+    })
+  })
+})
+
+
+===== nuxt.config.ts =====
+
+import tailwindcss from '@tailwindcss/vite'
+import { defineNuxtConfig } from 'nuxt/config'
+
+const DEFAULT_BASEURL = 'https://open-api.delcom.org/api/v1'
+
+export default defineNuxtConfig({
+  compatibilityDate: '2025-07-15',
+
+  // Mode SPA
+  ssr: false,
+
+  // Semua source berada di folder src/
+  srcDir: 'src/',
+
+  devtools: { enabled: true },
+
+  modules: ['@pinia/nuxt'],
+
+  // Rute dikelola manual lewat src/router.options.ts
+  pages: true,
+
+  // Wajib explicit import agar kode identik antara Nuxt dan Vitest
+  imports: { autoImport: false },
+  components: false,
+
+  css: ['~/index.css'],
+
+  app: {
+    head: {
+      htmlAttrs: { lang: 'id' },
+      title: 'Delcom Cash Flow',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        {
+          name: 'description',
+          content: 'Delcom Cash Flow: catat dan pantau arus kas pemasukan dan pengeluaran.',
+        },
+      ],
+      link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap',
+        },
+      ],
+    },
+  },
+
+  vite: {
+    plugins: [tailwindcss()],
+    define: {
+      'import.meta.env.DELCOM_BASEURL': JSON.stringify(
+        process.env.DELCOM_BASEURL ?? DEFAULT_BASEURL,
+      ),
+    },
+  },
+
+  typescript: {
+    strict: true,
+    typeCheck: false, // gunakan `bun run typecheck` secara manual
+  },
+})
+
+===== package.json =====
+
+{
+  "name": "ifs24005-pabwe2026-sk-p5-nuxt",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "start": "bun start.mjs",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage --passWithNoTests"
+  },
+  "dependencies": {
+    "@pinia/nuxt": "^1.0.2",
+    "lucide-vue-next": "^1.0.0",
+    "nuxt": "4.5.2",
+    "pinia": "^4.0.3",
+    "sweetalert2": "^11.26.25",
+    "vue": "^3.5.43",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@pinia/testing": "^2.0.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@types/node": "^26.6.4",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "@vitest/coverage-v8": "^5.0.3",
+    "@vue/test-utils": "^2.5.1",
+    "jsdom": "^30.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "5",
+    "vitest": "^5.0.3",
+    "vue-tsc": "^3.3.12"
+  }
+}
+
+===== vitest.config.ts =====
+
+import { fileURLToPath } from 'node:url'
+import vue from '@vitejs/plugin-vue'
+import { loadEnv } from 'vite'
+import { defineConfig } from 'vitest/config'
+
+const DEFAULT_BASEURL = 'https://open-api.delcom.org/api/v1'
+const srcPath = fileURLToPath(new URL('./src', import.meta.url))
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+
+  return {
+    plugins: [vue()],
+
+    // Sama dengan nuxt.config.ts supaya import.meta.env.DELCOM_BASEURL tersedia di test
+    define: {
+      'import.meta.env.DELCOM_BASEURL': JSON.stringify(env.DELCOM_BASEURL ?? DEFAULT_BASEURL),
+    },
+
+    // Sama dengan alias Nuxt (~ dan @ menunjuk ke srcDir)
+    resolve: {
+      alias: {
+        '~': srcPath,
+        '@': srcPath,
+      },
+    },
+
+    test: {
+      environment: 'jsdom',
+      globals: false,
+      include: ['src/**/*.test.ts'],
+      setupFiles: ['./src/setupTests.ts'],
+      clearMocks: true,
+      restoreMocks: true,
+      css: false,
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'html', 'lcov'],
+        reportsDirectory: './coverage',
+        include: ['src/**/*.{ts,vue}'],
+        exclude: [
+          'src/**/*.test.ts',
+          'src/**/*.d.ts',
+          'src/setupTests.ts',
+          'src/test-utils.ts',
+        ],
+        thresholds: {
+          lines: 100,
+          functions: 100,
+          branches: 100,
+          statements: 100,
+        },
+      },
+    },
+  }
+})
