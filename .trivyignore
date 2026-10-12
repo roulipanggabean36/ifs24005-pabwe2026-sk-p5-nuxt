@@ -1,0 +1,8 @@
+# Belum ada versi perbaikan dari maintainer (dicek 12 Okt 2026)
+# braces: dependency tidak langsung dari nitropack (build tool)
+CVE-2026-93687
+GHSA-vfj7-8cjw-p6xm
+# node-forge: dependency tidak langsung dari @nuxt/cli (dev server)
+CVE-2026-85393
+GHSA-86w9-cpqp-85rv
+GHSA-ppp5-5v6c-4jwp
