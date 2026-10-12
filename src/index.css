@@ -1,7 +1,8 @@
 @import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Warna brand */
   --color-brand-50: #eef2ff;
@@ -11,8 +12,8 @@
   --color-brand-700: #4338ca;
 
   /* Warna semantik arus kas */
-  --color-income: #059669;
-  --color-expense: #e11d48;
+  --color-income: #047857; /* emerald-700, kontras 5.5:1 di atas putih */
+  --color-expense: #be123c; /* rose-700, kontras 6.3:1 di atas putih */
 }
 
 @layer base {

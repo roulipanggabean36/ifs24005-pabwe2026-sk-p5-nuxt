@@ -42,7 +42,7 @@ const onSubmit = async (): Promise<void> => {
           autocomplete="email"
           placeholder="nama@email.com"
           :value="email"
-          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
           @input="onEmailInput"
         />
       </div>
@@ -57,7 +57,7 @@ const onSubmit = async (): Promise<void> => {
           autocomplete="current-password"
           placeholder="Masukkan kata sandi"
           :value="password"
-          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
           @input="onPasswordInput"
         />
       </div>
@@ -72,7 +72,7 @@ const onSubmit = async (): Promise<void> => {
       </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-slate-500">
+    <p class="mt-6 text-center text-sm text-slate-600">
       Belum punya akun?
       <RouterLink to="/auth/register" class="font-semibold text-brand-600 hover:text-brand-700">
         Daftar sekarang

@@ -73,16 +73,17 @@ const onDelete = async (): Promise<void> => {
       Kembali ke beranda
     </RouterLink>
 
-    <p v-if="store.loading" role="status" class="py-10 text-center text-sm text-slate-500">
-      Memuat transaksi...
-    </p>
+    <div v-if="store.loading">
+      <h1 class="sr-only">Detail transaksi</h1>
+      <p role="status" class="py-10 text-center text-sm text-slate-600">Memuat transaksi...</p>
+    </div>
 
     <div
       v-else-if="errorMessage"
       role="alert"
       class="rounded-2xl border border-expense/30 bg-expense/5 p-6"
     >
-      <p class="font-semibold text-expense">Transaksi tidak dapat dimuat</p>
+      <h1 class="font-semibold text-expense">Transaksi tidak dapat dimuat</h1>
       <p class="mt-1 text-sm text-slate-600">{{ errorMessage }}</p>
     </div>
 
@@ -105,7 +106,7 @@ const onDelete = async (): Promise<void> => {
 
         <div class="min-w-0 flex-1">
           <h1 class="truncate text-xl font-extrabold text-slate-900">{{ store.selected.label }}</h1>
-          <p class="text-sm text-slate-500">{{ TYPE_LABELS[store.selected.type] }}</p>
+          <p class="text-sm text-slate-600">{{ TYPE_LABELS[store.selected.type] }}</p>
         </div>
 
         <p
@@ -119,23 +120,23 @@ const onDelete = async (): Promise<void> => {
 
       <dl class="grid gap-5 p-6 sm:grid-cols-2">
         <div>
-          <dt class="text-xs font-semibold text-slate-500">Sumber dana</dt>
+          <dt class="text-xs font-semibold text-slate-600">Sumber dana</dt>
           <dd class="mt-1 text-sm font-medium text-slate-900">
             {{ SOURCE_LABELS[store.selected.source] }}
           </dd>
         </div>
         <div>
-          <dt class="text-xs font-semibold text-slate-500">Dicatat pada</dt>
+          <dt class="text-xs font-semibold text-slate-600">Dicatat pada</dt>
           <dd class="mt-1 text-sm font-medium text-slate-900">
             {{ formatDate(store.selected.created_at) }}
           </dd>
         </div>
         <div class="sm:col-span-2">
-          <dt class="text-xs font-semibold text-slate-500">Deskripsi</dt>
+          <dt class="text-xs font-semibold text-slate-600">Deskripsi</dt>
           <dd class="mt-1 text-sm text-slate-900">{{ store.selected.description }}</dd>
         </div>
         <div>
-          <dt class="text-xs font-semibold text-slate-500">Terakhir diubah</dt>
+          <dt class="text-xs font-semibold text-slate-600">Terakhir diubah</dt>
           <dd class="mt-1 text-sm font-medium text-slate-900">
             {{ formatDate(store.selected.updated_at) }}
           </dd>

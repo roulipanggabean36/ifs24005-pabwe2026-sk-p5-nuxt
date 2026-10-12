@@ -24,7 +24,7 @@ const description = computed(() =>
     <div class="w-full max-w-md text-center">
       <p class="text-6xl font-extrabold text-brand-600">{{ error.statusCode }}</p>
       <h1 class="mt-4 text-2xl font-extrabold text-slate-900">{{ title }}</h1>
-      <p class="mt-2 text-sm text-slate-500">{{ description }}</p>
+      <p class="mt-2 text-sm text-slate-600">{{ description }}</p>
 
       <!-- Tautan biasa (muat ulang penuh) sekaligus membersihkan status error Nuxt -->
       <a

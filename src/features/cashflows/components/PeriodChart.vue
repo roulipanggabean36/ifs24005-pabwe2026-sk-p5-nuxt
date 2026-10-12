@@ -30,7 +30,7 @@ const summary = (item: { inflow: number; outflow: number }): string =>
 <template>
   <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <h3 class="text-base font-bold text-slate-900">{{ title }}</h3>
+      <h2 class="text-base font-bold text-slate-900">{{ title }}</h2>
       <div class="flex items-center gap-4 text-xs text-slate-600">
         <span class="flex items-center gap-1.5">
           <span class="h-2.5 w-2.5 rounded-full bg-income" aria-hidden="true" />
@@ -43,7 +43,7 @@ const summary = (item: { inflow: number; outflow: number }): string =>
       </div>
     </div>
 
-    <p v-if="periods.length === 0" class="py-8 text-center text-sm text-slate-500">
+    <p v-if="periods.length === 0" class="py-8 text-center text-sm text-slate-600">
       Belum ada data statistik untuk ditampilkan.
     </p>
 
@@ -66,7 +66,7 @@ const summary = (item: { inflow: number; outflow: number }): string =>
             :style="{ height: `${barHeight(item.outflow)}%` }"
           />
         </div>
-        <span class="text-[11px] text-slate-500">{{ item.period }}</span>
+        <span class="text-[11px] text-slate-600">{{ item.period }}</span>
         <span class="sr-only">{{ summary(item) }}</span>
       </li>
     </ul>

@@ -8,7 +8,7 @@ import { useInput } from '~/hooks/useInput'
 
 const MIN_PASSWORD_LENGTH = 6
 const INPUT_CLASS =
-  'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30'
+  'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30'
 
 const usersStore = useUsersStore()
 
@@ -114,7 +114,7 @@ const onChangePassword = async (): Promise<void> => {
   <section class="mx-auto w-full max-w-3xl space-y-6">
     <header>
       <h1 class="text-2xl font-extrabold text-slate-900">Profil saya</h1>
-      <p class="mt-1 text-sm text-slate-500">Kelola data akun dan keamanan kata sandi Anda.</p>
+      <p class="mt-1 text-sm text-slate-600">Kelola data akun dan keamanan kata sandi Anda.</p>
     </header>
 
     <div
@@ -124,7 +124,7 @@ const onChangePassword = async (): Promise<void> => {
 
       <div class="min-w-0 flex-1 text-center sm:text-left">
         <p class="truncate text-lg font-bold text-slate-900">{{ displayName }}</p>
-        <p class="truncate text-sm text-slate-500">{{ displayEmail }}</p>
+        <p class="truncate text-sm text-slate-600">{{ displayEmail }}</p>
       </div>
 
       <label

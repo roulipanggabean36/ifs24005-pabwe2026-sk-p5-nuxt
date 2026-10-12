@@ -17,14 +17,14 @@ defineProps<{
           <Wallet class="h-7 w-7" aria-hidden="true" />
         </div>
         <h1 class="text-2xl font-extrabold text-slate-900">{{ title }}</h1>
-        <p v-if="subtitle" class="mt-2 text-sm text-slate-500">{{ subtitle }}</p>
+        <p v-if="subtitle" class="mt-2 text-sm text-slate-600">{{ subtitle }}</p>
       </div>
 
       <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <slot />
       </div>
 
-      <p class="mt-6 text-center text-xs text-slate-400">Delcom Cash Flow</p>
+      <p class="mt-6 text-center text-xs text-slate-600">Delcom Cash Flow</p>
     </div>
   </main>
 </template>
