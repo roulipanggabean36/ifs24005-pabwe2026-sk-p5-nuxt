@@ -1,8 +1,14 @@
-# Belum ada versi perbaikan dari maintainer (dicek 12 Okt 2026)
-# braces: dependency tidak langsung dari nitropack (build tool)
+# Belum ada versi perbaikan yang kompatibel dengan nuxt (dicek 12 Okt 2026)
+# Semua berasal dari dependency tidak langsung nuxt (devtools, nitropack, cli)
+# braces
 CVE-2026-93687
 GHSA-vfj7-8cjw-p6xm
-# node-forge: dependency tidak langsung dari @nuxt/cli (dev server)
+# node-forge
 CVE-2026-85393
 GHSA-86w9-cpqp-85rv
 GHSA-ppp5-5v6c-4jwp
+# simple-git (v4 merusak @nuxt/devtools) dan @simple-git/argv-parser
+GHSA-x6jw-m9v5-85vh
+GHSA-g4wm-2vf7-vfgr
+GHSA-858h-whjf-mvg5
+GHSA-v5rq-49vh-5v5c
